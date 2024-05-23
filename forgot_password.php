@@ -19,33 +19,30 @@ function send_json_response($status_code, $status, $message, $additional_data = 
 }
 
 try {
-    // Ensure required parameters are provided
-    if (isset($_POST['email'], $_POST['password'])) {
+    // Ensure required parameter (email) is provided
+    if (isset($_POST['email'])) {
         $email = $_POST['email'];
-        $password = $_POST['password'];
 
         // Get the user data based on the provided email
-        $user = $db->loginUser($email, $password);
+        $user = $db->forgotPassword($email);
 
         if ($user) {
-            // If login is successful, return user info
-            send_json_response(200, "success", "Login successful", [
-                "user" => [
-                    "id" => $user["id"],
-                    "name" => $user["name"],
-                    "email" => $user["email"],
-                ],
+            // If a user with the given email is found
+            send_json_response(200, "success", "Password retrieved successfully", [
+                "password" => $user["password"],
             ]);
         } else {
-            // If login fails due to incorrect email or password
-            send_json_response(401, "error", "Incorrect email or password"); // 401 Unauthorized
+            // If no user is found with the given email
+            send_json_response(404, "error", "Email not found"); // 404 Not Found
         }
     } else {
-        // If required parameter (email, password) is missing
-        send_json_response(400, "error", "Required parameters (email, password) are missing"); // 400 Bad Request
+        // If the required parameter (email) is missing
+        send_json_response(400, "error", "Required parameter (email) is missing"); // 400 Bad Request
     }
 } catch (Exception $e) {
     // If there is an unexpected error
     send_json_response(500, "error", "An unexpected error occurred: " . $e->getMessage()); // 500 Internal Server Error
 }
+
+
 ?>
